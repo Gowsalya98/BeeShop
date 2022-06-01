@@ -1,10 +1,7 @@
 const mongoose=require('mongoose')
 
 const loginSchema=mongoose.Schema({
-    createdAt:{
-        type:Date,
-        default:Date.now()
-    },
+    createdAt:String,
     userName:{
         type:String,
         default:''
@@ -15,11 +12,23 @@ const loginSchema=mongoose.Schema({
     },
     phoneNumber:{
         type:Number,
-        default:''
+        default:0
     },
     profileImage:{
         type:String,
         default:''
+    },
+    graphDomain:{
+        type:String,
+        default:''
+    },
+    faceBookId:{
+        type:Number,
+        default:0
+    },
+    GoogleId:{
+        type:Number,
+        default:0
     },
     deleteFlag:{
         type:Boolean,
@@ -41,10 +50,7 @@ const ImageSchema=mongoose.Schema({
         type:Boolean,
         default:false
     },
-    createdAt:{
-        type:Date,
-        default:Date.now()
-    }
+    createdAt:String
 })
 
 const login=mongoose.model('loginSchema',loginSchema)

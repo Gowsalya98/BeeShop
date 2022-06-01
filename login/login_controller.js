@@ -2,67 +2,66 @@ const mongoose=require('mongoose')
 const nodemailer=require('nodemailer')
 const fast2sms=require('fast-two-sms')
 const jwt=require('jsonwebtoken')
+const moment=require('moment')
 const {login,image,otpSchema}=require('./login_model')
 const {randomString}=require('../middleware/randomString')
 
 const loginForUser=async(req,res)=>{
     try {
-        const data=await login.create(req.body)
-    if(data){
-        if (data.PhoneNumber!=null) {
-           const datas=await login.aggregate([{$match:{email: req.body.email}}])
-                if(datas){
-                        const otp = randomString(3)
-                        console.log("otp", otp)
-                      const data1=await otpSchema.create({otp: otp })
-                        console.log("line 17", data1)
-                            if (data1) {
-                                postMail(req.body.email,"BeeShop","verify otp:"+otp)
-                              const token = jwt.sign({ userid: data._id }, 'secret')
-                              console.log("line 22",token)
-                              res.status(200).send({ message: "verification otp send your email",otp,token,data})
-                                setTimeout(() => {
-                                   otpSchema.findOneAndDelete({ otp: otp },{returnOriginal:false}, (err, result) => {
-                                        if(err){throw err}
-                                        console.log("line 27", result)
-                                    })
-                                }, 300000000)
-                            }else{res.status(400).send({success:'false',message:'otp does not send'})}  
-                }else{
-                    res.status(400).send({success:"false",message:'please check your mail id'})
-                 }   
-        }else {
-            console.log('line 35',req.body.PhoneNumber)
-          const datas=await login.aggregate([{ $match:{PhoneNumber: req.body.PhoneNumber }}])
-                if(datas){
-                    if(datas.PhoneNumber==req.body.PhoneNumber){
-                        const otp = randomString(3)
-                            console.log("otp", otp)
-                     const dataValue=await otpSchema.create({otp: otp })
-                                console.log("line 42", dataValue)
-                    if (dataValue) {
-                                console.log("line 45", dataValue)
-                                const token = jwt.sign({ userid: data._id }, 'secret')
-                              console.log("line 46",token)
-                        const response = await fast2sms.sendMessage({authorization: process.env.OTPKEY,message:otp,numbers:[req.body.phoneNumber]})
-                        res.status(200).send({ message: "verification otp send your mobile number",otp,token,data})
-                                    setTimeout(() => {
-                                       otpSchema.findOneAndDelete({ otp: otp },{returnOriginal:false}, (err, result) => {
-                                            if(err){throw err}
-                                            console.log("line 51", result)
-                                        })
-                                    }, 30000000)
-                    }else{res.status(302).send('otp does not send')}  
-                    }else{res.status(302).send('contact does not match')}
-                }else{
-                    res.status(302).send({message:'please provide vaild phoneNumber'})
-                }
+        console.log(req.body);
+        if(Object.keys(req.body).length===0){
+            res.status(302).send({message:'please provide valid details'})
+        }else{
+            const data=await login.aggregate([{$match:{$or:[{email:req.body.email},{phoneNumber:req.body.phoneNumber},{GoogleId:req.body.GoogleId},{faceBookId:req.body.faceBookId}]}}])
+            console.log('line 11',data)
+            if(data.length!=0){
+                        if (data[0].email!=null||data[0].PhoneNumber!=null) {
+                                const otp = randomString(3)
+                                console.log("otp", otp)
+                              const data1=await otpSchema.create({otp: otp })
+                                console.log("line 18", data1)
+                                    if (data1) {
+                                        const response = await fast2sms.sendMessage({authorization: process.env.OTPKEY,message:otp,numbers:[data[0].phoneNumber]})
+                                        postMail(data[0].email,"BeeShop","verify otp:"+otp)
+                                            const token = jwt.sign({ userid: data[0]._id }, 'secret')
+                                             console.log("line 23",token)
+                                                res.status(200).send({ message: "verification otp send your email",otp,token,data:data})
+                                                    setTimeout(() => {
+                                           otpSchema.findOneAndDelete({ otp: otp },{returnOriginal:false}, (err, result) => {
+                                                if(result){
+                                                console.log("line 28", result)
+                                                }else{
+                                                   res.status(400).send({message:'something error'})
+                                                }
+                                            })
+                                        }, 300000000)
+                                    }else{
+                                        res.status(400).send({success:'false',message:'otp does not send'})
+                                    }  
+                        }else if(data[0].GoogleId!=0 ||data[0].faceBookId!=0){
+                            if(data!=null){
+                                const token = jwt.sign({ userid: data[0]._id }, 'secret')
+                                console.log("line 39",token)
+                                res.status(200).send({ success:'true',message: "login successfull",token,data:data})
+                             } else{
+                                res.status(400).send({ success:'false',message: "failed to login"})
+                             }   
+                        }else{
+                            res.status(400).send({ success:'false',message: "failed"})
+                            }        
+            }else{
+                console.log('line 48',req.body)
+                req.body.createdAt=moment(new Date()).toISOString().slice(0,10)
+                const data1=await login.create(req.body)
+                    if(data1){
+                        console.log('line 51',data1)
+                        res.status(200).send({message:'create successfully',data1})
+                    }else{res.status(400).send({message:'please provide valid email'})}
             }
-    }
+        }
 }catch (err) {
         console.log(err.message)
-        res.status(500).send({ message: 'internal server error' })
-    }
+        res.status(500).send({ message: 'internal server error' })}
 }
 let transport = nodemailer.createTransport({
     service: 'gmail',
@@ -85,7 +84,7 @@ const verificationOtp=async(req,res)=>{
         const data=await otpSchema.aggregate([{$match:{otp:req.body.otp}}])
        console.log('line 52',data)
        if(data.length!=0){
-           res.status(200).send({success:'true',message:'successfull',data})
+           res.status(200).send({success:'true',message:'login successfull',data})
        }else{
            res.status(400).send({success:'false',message:'invalid otp try it again',data:[]})
        }
@@ -97,6 +96,7 @@ const verificationOtp=async(req,res)=>{
 const imageUpload=(req,res)=>{
     try{
             req.body.image=`http://192.168.0.112:9096/uploads/${req.file.originalname}`
+            req.body.createdAt=moment(new Date()).toISOString().slice(0,10)
             image.create(req.body,async(err,data)=>{
               if(err){
                 res.status(400).send({success:'false',message:'failed'})

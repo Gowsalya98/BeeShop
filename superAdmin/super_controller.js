@@ -1,6 +1,7 @@
 const {superAdmin} = require('./super_model')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const moment=require('moment')
 const { validationResult } = require('express-validator')
 
 exports.superAdminRegister = async (req, res) => {
@@ -13,6 +14,7 @@ exports.superAdminRegister = async (req, res) => {
          console.log('line 13',data)
         if (data == 0) {
         req.body.password = await bcrypt.hash(req.body.password, 10)
+        req.body.createdAt=moment(new Date()).toISOString().slice(0,10)
          const datas=await superAdmin.create(req.body)
          if(datas){
             res.status(200).send({ message: "Successfully Registered", data:datas })

@@ -1,10 +1,7 @@
 const mongoose = require('mongoose');
 
 const superAdminSchema = mongoose.Schema({
-    createdAt:{
-        type:Date,
-        default:new Date()
-    },
+    createdAt:String,
     userName : String,
     email : String,
     password: String,

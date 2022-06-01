@@ -11,10 +11,7 @@ const categoryDetails=mongoose.Schema({
 })
 
 const superAdminAddCategoryDetails=mongoose.Schema({
-    createdAt:{
-        type:Date,
-        default:new Date()
-    },
+    createdAt:String,
     superAdminId:String,
     category:[categoryDetails],
     deleteFlag:{

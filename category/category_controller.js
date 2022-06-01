@@ -1,6 +1,7 @@
 const {category}=require('./category_model')
 const {validationResult}=require('express-validator')
 const mongoose=require('mongoose')
+const moment=require('moment')
 const jwt = require("jsonwebtoken");
 
 const addCategory=async(req,res)=>{
@@ -10,6 +11,7 @@ const addCategory=async(req,res)=>{
             const token=await jwt.decode(req.headers.authorization)
             req.body.superAdminId=token.userid
             console.log('line 12',req.body.superAdminId)
+            req.body.createdAt=moment(new Date()).toISOString().slice(0,10)
             category.create(req.body,(err,data)=>{
                 if(err){
                     res.status(400).send({success:'false',message:'failed'})
