@@ -1,6 +1,6 @@
 const mongoose=require('mongoose')
 
-const loginSchema=mongoose.Schema({
+const registerSchema=mongoose.Schema({
     createdAt:String,
     userName:{
         type:String,
@@ -9,6 +9,14 @@ const loginSchema=mongoose.Schema({
     email:{
         type:String,
         default:''
+    },
+    password:{
+        type:String,
+        default:''
+    },
+    termsAndConditions:{
+        type:Boolean,
+        default:false
     },
     phoneNumber:{
         type:Number,
@@ -34,6 +42,8 @@ const loginSchema=mongoose.Schema({
         type:Boolean,
         default:false
     }
+},{
+    collection:'registerSchema'
 })
 
 const otp = mongoose.Schema({
@@ -53,8 +63,8 @@ const ImageSchema=mongoose.Schema({
     createdAt:String
 })
 
-const login=mongoose.model('loginSchema',loginSchema)
+const register=mongoose.model('registerSchema',registerSchema)
 const otpSchema=mongoose.model('otp',otp)
 const image=mongoose.model('ImageSchema',ImageSchema)
 
-module.exports={login,otpSchema,image}
+module.exports={register,otpSchema,image}

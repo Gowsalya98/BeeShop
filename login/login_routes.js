@@ -1,20 +1,23 @@
 const router=require('express').Router()
 const valid=require('../middleware/validation')
 const multer=require('../middleware/multer')
-const loginControl=require('./login_controller')
+const registerControl=require('./login_controller')
 
-router.post('/login',valid.validation,loginControl.loginForUser)
 
-router.post('/image',multer.upload.single('image'),loginControl.imageUpload)
+router.post('/register',valid.valid,registerControl.userRegister)
 
-router.post('/verification',loginControl.verificationOtp)
+router.post('/login',valid.valid,registerControl.loginForUser)
 
-router.get('/getAll',loginControl.getAllUser)
+router.post('/image',multer.upload.single('image'),registerControl.imageUpload)
 
-router.get('/getById/:userId',loginControl.getById)
+router.post('/verification',registerControl.verificationOtp)
 
-router.put('/updateProfile/:userId',loginControl.updateUserDetails)
+router.get('/getAll',registerControl.getAllUser)
 
-router.delete('/deleteProfile/:userId',loginControl.deleteUserDetails)
+router.get('/getById/:userId',registerControl.getById)
+
+router.put('/updateProfile/:userId',registerControl.updateUserDetails)
+
+router.delete('/deleteProfile/:userId',registerControl.deleteUserDetails)
 
 module.exports=router

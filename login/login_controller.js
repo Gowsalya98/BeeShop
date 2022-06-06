@@ -3,15 +3,50 @@ const nodemailer=require('nodemailer')
 const fast2sms=require('fast-two-sms')
 const jwt=require('jsonwebtoken')
 const moment=require('moment')
-const {login,image,otpSchema}=require('./login_model')
+const {register,image,otpSchema}=require('./login_model')
 const {randomString}=require('../middleware/randomString')
+const { validationResult } = require('express-validator')
 
+const userRegister=async(req,res)=>{
+    try{
+        const errors =validationResult(req)
+        if(!errors.isEmpty()){
+            return res.status(400).send({errors:errors.array()})
+        }else{
+            const num=await register.countDocuments({phoneNumber:req.body.phoneNumber})
+            if(num==0){
+            const data=await register.create(req.body)
+                if(data){
+                    console.log('line 18',data)
+                    res.status(200).send({success:'true',message:'register successfully',data:data})
+                }else{
+                    res.status(400).send({success:'false',message:'failed to register'})
+                }
+            }else{
+                res.status(302).send({success:'false',message:'your phoneNumber already exist'})
+            }
+}
+    }catch(err){
+        res.status(500).send({message:'internal server error'})
+    }
+}
+const login=async(req,res)=>{
+    try{
+
+    }catch(err){
+        res.status(500).send({message:'internal server error'})
+    }
+}
 const loginForUser=async(req,res)=>{
     try {
         console.log(req.body);
         if(Object.keys(req.body).length===0){
             res.status(302).send({message:'please provide valid details'})
         }else{
+            const errors =validationResult(req)
+            if(!errors.isEmpty()){
+                return res.status(400).send({errors:errors.array()})
+            }else{
             const data=await login.aggregate([{$match:{$or:[{email:req.body.email},{phoneNumber:req.body.phoneNumber},{GoogleId:req.body.GoogleId},{faceBookId:req.body.faceBookId}]}}])
             console.log('line 11',data)
             if(data.length!=0){
@@ -59,6 +94,7 @@ const loginForUser=async(req,res)=>{
                     }else{res.status(400).send({message:'please provide valid email'})}
             }
         }
+    }
 }catch (err) {
         console.log(err.message)
         res.status(500).send({ message: 'internal server error' })}
@@ -191,4 +227,12 @@ const deleteUserDetails=async(req,res)=>{
           res.status(500).send({message:'internal server error'})
       }
 }
-module.exports={loginForUser,verificationOtp,imageUpload,getAllUser,getById,updateUserDetails,deleteUserDetails}
+module.exports={
+    userRegister,
+    loginForUser,
+    verificationOtp,
+    imageUpload,
+    getAllUser,
+    getById,
+    updateUserDetails,
+    deleteUserDetails}

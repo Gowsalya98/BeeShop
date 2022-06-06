@@ -13,7 +13,7 @@ exports.superAdminRegister = async (req, res) => {
          const data=await superAdmin.countDocuments({email: req.body.email })
          console.log('line 13',data)
         if (data == 0) {
-        req.body.password = await bcrypt.hash(req.body.password, 10)
+        req.body.password = await bcrypt.hashSync(req.body.password, 10)
         req.body.createdAt=moment(new Date()).toISOString().slice(0,10)
          const datas=await superAdmin.create(req.body)
          if(datas){
@@ -39,7 +39,7 @@ exports.superAdminLogin = async (req, res) => {
             superAdmin.findOne({ email: req.body.email }, async (err, data) => {
               if(data){
                   console.log('line 40',data);
-                    const password = await bcrypt.compare(req.body.password, data.password)
+                  const password=await bcrypt.compare(req.body.password,data.password)
                     if (password == true) {
                         const userid = data._id
                         const token = jwt.sign({ userid }, 'secretKey')
