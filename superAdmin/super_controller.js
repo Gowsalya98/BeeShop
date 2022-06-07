@@ -41,8 +41,8 @@ exports.superAdminLogin = async (req, res) => {
                   console.log('line 40',data);
                   const password=await bcrypt.compare(req.body.password,data.password)
                     if (password == true) {
-                        const userid = data._id
-                        const token = jwt.sign({ userid }, 'secretKey')
+                        const userId = data._id
+                        const token = jwt.sign({ userId }, 'secretKey')
                         console.log('line 45',data)
                         res.status(200).send({ message: "Login Successfully", token,data })
                     } else {

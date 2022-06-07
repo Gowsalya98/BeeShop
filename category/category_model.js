@@ -1,7 +1,7 @@
 const mongoose=require('mongoose')
 
 const subCategory=mongoose.Schema({
-    productName:String
+    subCategoryName:String
 })
 
 const categoryDetails=mongoose.Schema({

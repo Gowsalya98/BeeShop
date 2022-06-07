@@ -6,7 +6,7 @@ const validation = require('../middleware/validation')
 
 router.post('/register', validation.validation,superAdminRegister)
 
-router.post('/login', validation.valid,superAdminLogin)
+router.post('/login', validation.validation,superAdminLogin)
 
 //router.post('/forgetPassword',validation.validation,forgetPassword)
 

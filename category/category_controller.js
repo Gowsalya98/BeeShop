@@ -9,7 +9,7 @@ const addCategory=async(req,res)=>{
       console.log('line 8',req.body)
         if(req.headers.authorization){
             const token=await jwt.decode(req.headers.authorization)
-            req.body.superAdminId=token.userid
+            req.body.superAdminId=token.userId
             console.log('line 12',req.body.superAdminId)
             req.body.createdAt=moment(new Date()).toISOString().slice(0,10)
             category.create(req.body,(err,data)=>{
@@ -115,4 +115,10 @@ const deleteCategory=async(req,res)=>{
     }
 }
 
-module.exports={addCategory,getAllCategory,getById,updateCategory,deleteCategory}
+module.exports={
+  addCategory,
+  getAllCategory,
+  getById,
+  updateCategory,
+  deleteCategory
+}

@@ -1,9 +1,10 @@
 const mongoose=require('mongoose')
 const nodemailer=require('nodemailer')
 const fast2sms=require('fast-two-sms')
+const bcrypt=require('bcrypt')
 const jwt=require('jsonwebtoken')
 const moment=require('moment')
-const {register,image,otpSchema}=require('./login_model')
+const {register,image,otpSchema}=require('./user_model')
 const {randomString}=require('../middleware/randomString')
 const { validationResult } = require('express-validator')
 
@@ -15,9 +16,12 @@ const userRegister=async(req,res)=>{
         }else{
             const num=await register.countDocuments({phoneNumber:req.body.phoneNumber})
             if(num==0){
-            const data=await register.create(req.body)
+                req.body.password=await bcrypt.hash(req.body.password,10)
+                req.body.repeatPassword=await bcrypt.hash(req.body.repeatPassword,10)
+                req.body.createdAt=moment(new Date()).toISOString().slice(0,10)
+        const data=await register.create(req.body)
                 if(data){
-                    console.log('line 18',data)
+                    console.log('line 24',data)
                     res.status(200).send({success:'true',message:'register successfully',data:data})
                 }else{
                     res.status(400).send({success:'false',message:'failed to register'})
@@ -32,8 +36,25 @@ const userRegister=async(req,res)=>{
 }
 const login=async(req,res)=>{
     try{
-
+        const errors=validationResult(req)
+        if(!errors.isEmpty()){
+            return res.status(302).send({errors:errors.array()})
+        }else{
+            const data=await register.aggregate([{$match:{phoneNumber:req.body.phoneNumber}}])
+            if(data!=null){
+                const verifyPassword=await bcrypt.compare(req.body.password,data[0].password)
+                if(verifyPassword==true){
+                    const token=jwt.sign({userId:data[0]._id},'SecretKey')
+                    res.status(200).send({success:'true',message:'login successfully',token,data:data})
+                }else{
+                    res.status(302).send({success:'false',message:'password mismatch'})
+                }
+            }else{
+                res.status(400).send({success:'false',message:'please register here...!'})
+            }
+        }
     }catch(err){
+        console.log(err)
         res.status(500).send({message:'internal server error'})
     }
 }
@@ -47,7 +68,7 @@ const loginForUser=async(req,res)=>{
             if(!errors.isEmpty()){
                 return res.status(400).send({errors:errors.array()})
             }else{
-            const data=await login.aggregate([{$match:{$or:[{email:req.body.email},{phoneNumber:req.body.phoneNumber},{GoogleId:req.body.GoogleId},{faceBookId:req.body.faceBookId}]}}])
+            const data=await register.aggregate([{$match:{$or:[{email:req.body.email},{phoneNumber:req.body.phoneNumber},{GoogleId:req.body.GoogleId},{faceBookId:req.body.faceBookId}]}}])
             console.log('line 11',data)
             if(data.length!=0){
                         if (data[0].email!=null||data[0].PhoneNumber!=null) {
@@ -131,7 +152,7 @@ const verificationOtp=async(req,res)=>{
 
 const imageUpload=(req,res)=>{
     try{
-            req.body.image=`http://192.168.0.112:9096/uploads/${req.file.originalname}`
+            req.body.image=`http://192.168.0.112:9096/uploads/${req.file.filename}`
             req.body.createdAt=moment(new Date()).toISOString().slice(0,10)
             image.create(req.body,async(err,data)=>{
               if(err){
@@ -149,7 +170,7 @@ const getAllUser=async(req,res)=>{
     try{
         const token=jwt.decode(req.headers.authorization)
         if(token!=null){
-        const data=await login.aggregate([{$match:{deleteFlag:false}}])
+        const data=await register.aggregate([{$match:{deleteFlag:false}}])
         console.log('line 117',data)
         if(data){
             data.sort().reverse()
@@ -167,7 +188,7 @@ const getAllUser=async(req,res)=>{
 const getById=async(req,res)=>{
     try{
         if(req.params.userId.length==24){
-        const data=await login.aggregate([{$match:{$and:[{_id:new mongoose.Types.ObjectId(req.params.userId)},{deleteFlag:false}]}}])
+        const data=await register.aggregate([{$match:{$and:[{_id:new mongoose.Types.ObjectId(req.params.userId)},{deleteFlag:false}]}}])
             if(data){
                 res.status(200).send({success:'true',message:'your data',data:data})
             }else{
@@ -184,7 +205,7 @@ const updateUserDetails=async(req,res)=>{
     try{
         if(req.headers.authorization){
           if (req.params.userId.length == 24) {
-          const data = await login.findOneAndUpdate({_id:req.params.userId,deleteFlag:false},{$set:req.body},{new:true})
+          const data = await register.findOneAndUpdate({_id:req.params.userId,deleteFlag:false},{$set:req.body},{new:true})
             if (data!=null) {
               const token=await jwt.decode(req.headers.authorization)
               if(token){
@@ -196,7 +217,7 @@ const updateUserDetails=async(req,res)=>{
               res.status(302).send({ success:'false',data: [] });
             }
           } else {
-            res.status(200).send({ message: "please provide a valid space id" });
+            res.status(200).send({ message: "please provide a valid user id" });
           }
         }else{
           res.status(400).send({ message: "unauthorized" });
@@ -210,14 +231,14 @@ const deleteUserDetails=async(req,res)=>{
     try{
         if(req.headers.authorization){
           if(req.params.userId.length==24){
-              const data=await login.findOneAndUpdate({_id:req.params.userId},{deleteFlag:true},{new:true})
+              const data=await register.findOneAndUpdate({_id:req.params.userId},{deleteFlag:true},{new:true})
               if(data!=null){
                   res.status(200).send({success:'true',message:'delete successfully',data})
               }else{
                   res.status(400).send({success:'false', message:'something wrong please try it again'})
               }
           }else{
-              res.status(400).send({success:'false',message:'please provide valid id'})
+              res.status(400).send({success:'false',message:'please provide valid user id'})
           }
         }else{
           res.status(400).send({success:'false',message:"unauthorized"})
@@ -229,10 +250,12 @@ const deleteUserDetails=async(req,res)=>{
 }
 module.exports={
     userRegister,
+    login,
     loginForUser,
     verificationOtp,
     imageUpload,
     getAllUser,
     getById,
     updateUserDetails,
-    deleteUserDetails}
+    deleteUserDetails
+}

@@ -14,15 +14,39 @@ const registerSchema=mongoose.Schema({
         type:String,
         default:''
     },
-    termsAndConditions:{
-        type:Boolean,
-        default:false
+    repeatPassword:{
+        type:String,
+        default:''
     },
     phoneNumber:{
         type:Number,
         default:0
     },
     profileImage:{
+        type:String,
+        default:''
+    },
+    address:{
+        type:String,
+        default:''
+    },
+    city:{
+        type:String,
+        default:''
+    },
+    state:{
+        type:String,
+        default:''
+    },
+    country:{
+        type:String,
+        default:''
+    },
+    pincode:{
+        type:Number,
+        default:0
+    },
+    birthday:{
         type:String,
         default:''
     },
@@ -64,7 +88,12 @@ const ImageSchema=mongoose.Schema({
 })
 
 const register=mongoose.model('registerSchema',registerSchema)
+
 const otpSchema=mongoose.model('otp',otp)
+
 const image=mongoose.model('ImageSchema',ImageSchema)
 
-module.exports={register,otpSchema,image}
+module.exports={
+    register,
+    otpSchema,
+    image}
