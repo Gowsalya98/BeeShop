@@ -1,18 +1,16 @@
 const mongoose=require('mongoose')
 
 const subscriptionSchema=mongoose.Schema({
-    paymentId:String,
+    createdAt:String,
+    orderId:String,
     accountHolderName:String,
     bankName:String,
     branchAddress:String,
     accountNumber:String,
     IFSCCode:String,
-    subscriptionPlan:String,
+    subscriptionPlanName:String,
+    subscriptionPlanDays:String,
     subscriptionAmount:String,
-    createdAt:{
-        type:Date,
-        default:new Date()
-    },
     ownerId:String,
     subscriptionEndDate:{
         type:String,
@@ -20,17 +18,19 @@ const subscriptionSchema=mongoose.Schema({
     },
     validityDays:{
         type:Number,
-        default:'0'
-    }
-
+        default:0
+    },
+    productId:String,
+    ownerId:String,
+    productOwner:Object,
 },{
-    collection:'subcribeDetails'
+    collection:'paymentAndSubScribe'
 })
 const paymentSchema=mongoose.Schema({
-    paymentId:String,
+    orderId:String,
     createdAt:String
 },{
-    collection:'paymentDetails'
+    collection:'orderId'
 })
 
 const subscribe=mongoose.model('subscriptionSchema',subscriptionSchema)

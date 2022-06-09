@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken')
 const moment=require('moment')
 const { validationResult } = require('express-validator')
 
-exports.superAdminRegister = async (req, res) => {
+const register = async (req, res) => {
     try {
         const errors = validationResult(req)
         if (!errors.isEmpty()) {
@@ -30,7 +30,7 @@ exports.superAdminRegister = async (req, res) => {
     }
 }
 
-exports.superAdminLogin = async (req, res) => {
+const login = async (req, res) => {
     try {
         const errors = validationResult(req)
         if (!errors.isEmpty()) {
@@ -60,4 +60,15 @@ exports.superAdminLogin = async (req, res) => {
     }
 }
 
+const createPackageForSuperAdmin=async (req,res)=>{
+    try{
 
+    }catch(err){
+        res.status(500).send({message:'internal server error'})
+    }
+}
+
+module.exports={
+    register,
+    login
+}

@@ -21,15 +21,38 @@ const sellProductSchema=mongoose.Schema({
     phoneNumber:String,
     profileImage:String   
     },
-    subscriptionPlan:{
-    planName:{
-        type:String,
-        default:''
-    },
-    planPrice:{
+    rating:{
         type:Number,
         default:0
-    }
+    },
+    review:[String],
+    paymentStatus:{
+        type:String,
+        default:'pending'
+    },
+    orderId:{
+        type:String,
+        default:'0'
+    },
+    subscriptionPlanName:{
+        type:String,
+        default:'0'
+    },
+    subscriptionAmount:{
+        type:String,
+        default:'0'
+    },
+    subscriptionStartDate:{
+        type:String,
+        default:'0'
+    },
+    subscriptionEndDate:{
+        type:String,
+        default:'0'
+    },
+    validityDays:{
+        type:Number,
+        default:0
     },
     deleteFlag:{
         type:Boolean,

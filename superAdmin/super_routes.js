@@ -1,12 +1,12 @@
 const router = require('express').Router()
 
-const {superAdminRegister,superAdminLogin} = require('./super_controller')
+const superControl = require('./super_controller')
 
 const validation = require('../middleware/validation')
 
-router.post('/register', validation.validation,superAdminRegister)
+router.post('/register', validation.validation,superControl.register)
 
-router.post('/login', validation.validation,superAdminLogin)
+router.post('/login', validation.validation,superControl.login)
 
 //router.post('/forgetPassword',validation.validation,forgetPassword)
 
