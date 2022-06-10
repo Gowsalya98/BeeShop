@@ -1,4 +1,4 @@
-const {superAdmin} = require('./super_model')
+const {superAdmin,package} = require('./super_model')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const moment=require('moment')
@@ -59,16 +59,82 @@ const login = async (req, res) => {
         res.status(500).send({ success:'false',message:'internal server error'})
     }
 }
-
 const createPackageForSuperAdmin=async (req,res)=>{
     try{
-
+        const superAdminToken=jwt.decode(req.headers.authorization)
+        if(superAdminToken!=null){
+            const data=await package.create(req.body)
+            if(data!=null){
+                res.status(200).send({success:'true',message:'create package successfull',data})
+            }else{
+                res.status(400).send({success:'false',message:'failed to create package'})
+            }
+        }else{
+            res.status(302).send({success:'false',message:'unauthorized'})
+        }
     }catch(err){
         res.status(500).send({message:'internal server error'})
     }
 }
-
+const getAllPackage=async(req,res)=>{
+    try{
+        const superAdminToken=jwt.decode(req.headers.authorization)
+        if(superAdminToken!=null){
+        const data=await package.aggregate([{$match:{deleteFlag:false}}])
+        if(data!=null){
+            res.status(200).send({success:'true',message:'All package details',data:data})
+        }else{
+            res.status(302).send({success:'false',message:'data not found'})
+        }
+    }else{
+        res.status(302).send({success:'false',message:'unauthorized'})
+    }
+    }catch(err){
+        res.status(500).send({success:'false',message:'internal server error'})
+    }
+}
+const updatePackage=async(req,res)=>{
+    try{
+        if(req.params.packageId.length==24){
+            const datas=await package.findOne({_id:req.params.packageId,deleteFlag:false})
+            if(datas!=null){
+            const data=await package.findOneAndUpdate({_id:req.params.packageId},req.body,{new:true})
+            if(data!=null){
+                res.status(200).send({success:'true',message:'update data successfully',data:data})
+            }else{
+                res.status(302).send({success:'false',message:'does not delete data'})
+            }
+        }else{
+            res.status(302).send({success:'false',message:'your data already deleted'})
+        }
+    }else{
+        res.status(400).send({success:'false',message:'invalid id'})
+    }
+    }catch(err){
+        res.status(500).send({success:'false',message:'internal server error'})
+    }
+}
+const deletePackage=async(req,res)=>{
+    try{
+        if(req.params.packageId.length==24){
+            const data=await package.findOneAndUpdate({_id:req.params.packageId},{$set:{deleteFlag:true}},{returnOriginal:false})
+            if(data!=null){
+                res.status(200).send({success:'true',message:'delete data successfully',data:data})
+            }else{
+                res.status(302).send({success:'false',message:'does not delete data'})
+            }
+        }else{
+            res.status(400).send({success:'false',message:'invalid id'})
+        }
+    }catch(err){
+        res.status(500).send({message:'internal server error'})
+    }
+}
 module.exports={
     register,
-    login
+    login,
+    createPackageForSuperAdmin,
+    getAllPackage,
+    updatePackage,
+    deletePackage
 }

@@ -23,7 +23,10 @@ const addProductDetails=async(req,res)=>{
                     user.email=data[0].email,
                     user.phoneNumber=data[0].phoneNumber,
                     user.profileImage=data[0].profileImage
-                    req.body.userDetails=user
+                    user.address=data[0].address
+                    user.city=data[0].city
+                    user.state=data[0].state
+                    req.body.productOwnerDetails=user
 
                     req.body.createdAt=moment(new Date()).toISOString().slice(0,10)
                    const result=await product.create(req.body)

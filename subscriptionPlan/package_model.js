@@ -21,8 +21,7 @@ const subscriptionSchema=mongoose.Schema({
         default:0
     },
     productId:String,
-    ownerId:String,
-    productOwner:Object,
+    ownerId:String
 },{
     collection:'paymentAndSubScribe'
 })

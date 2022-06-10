@@ -17,7 +17,20 @@ const superAdminSchema = mongoose.Schema({
 }, {
     collection: 'superAdmin'
 })
-
+const packageSchema=mongoose.Schema({
+    createdAt:String,
+    subscriptionPlanName:String,
+    subscriptionAmount:String,
+    description:[String],
+    deleteFlag:{
+        type:Boolean,
+        default:false
+    }
+},{
+    collection:'package'
+})
 const superAdmin = mongoose.model('superAdminSchema', superAdminSchema)
 
-module.exports={superAdmin}
+const package=mongoose.model('packageSchema',packageSchema)
+
+module.exports={superAdmin,package}

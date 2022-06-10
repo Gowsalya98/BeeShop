@@ -55,6 +55,7 @@ const subscriptionPlan=async(req,res)=>{
                     req.body.subscriptionEndDate=moment(new Date()).add(30+differInDays,'days').toISOString()
                     }
                       req.body.productId=req.params.productId
+                      req.body.createdAt=moment(new Date()).toISOString()
                       const createPaymentAgain=await subscribe.create(req.body)
                       console.log('line 59',createPaymentAgain)
             }else{
@@ -63,8 +64,6 @@ const subscriptionPlan=async(req,res)=>{
                     console.log('line 62',data)    
                     if(data.length!=null){
                         req.body.ownerId=data.productOwnerId
-                        req.body.productOwner=data
-                        
                         req.body.createdAt=moment(new Date()).toISOString()
                         const createPayment=await subscribe.create(req.body)
                         console.log('line 66',createPayment)
@@ -82,14 +81,13 @@ const subscriptionPlan=async(req,res)=>{
                             req.body.orderId=createPayment.orderId
                             req.body.paymentStatus='paid' 
                         
-                     }//else{
-                    //     res.status(302).send({success:'false',message:'data not found'})
-                    // }    
+                     }  
             }
             const paymentDetailsUpdate=await subscribe.findOneAndUpdate({productId:req.params.productId},req.body,{new:true})
             console.log('...',paymentDetailsUpdate)
+                           
             const productDetailsUpdate = await product.findByIdAndUpdate(req.params.productId, req.body, { new: true })
-             console.log('product:',productDetailsUpdate)
+            console.log('product:',productDetailsUpdate)
             res.status(200).send({success:'true',message:'payment created successfully',paymentDetailsUpdate})
 
         }else{

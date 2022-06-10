@@ -15,17 +15,25 @@ const sellProductSchema=mongoose.Schema({
     adTags:String,
     productLocation:String
     },
-    userDetails:{
+    productOwnerDetails:{
     userName:String,
     email:String,
     phoneNumber:String,
-    profileImage:String   
+    profileImage:String,
+    address:String,
+    city:String,
+    state:String
     },
     rating:{
         type:Number,
         default:0
     },
-    review:[String],
+    review:[{
+        userName:String,
+        email:String,
+        quotes:String,
+        description:String
+    }], 
     paymentStatus:{
         type:String,
         default:'pending'
