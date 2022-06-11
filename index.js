@@ -13,6 +13,8 @@ const category=require('./category/category_routes')
 const product=require('./product/product_routes')
 const payment=require('./subscriptionPlan/package_routes')
 const review=require('./reviewAndReport/review_routes')
+const FAQ=require('./FAQ/FAQ_routes')
+
 
 app.use(cors())
 app.use(express.urlencoded({ extended: true }))
@@ -21,7 +23,7 @@ app.use(express.json())
 app.use('/uploads', express.static('/home/fbnode/NODE_GOWSI/uploads/BeeShop'))
 
 app.use('/user',user,product,payment,review)
-app.use('/admin',superadmin,category)
+app.use('/admin',superadmin,category,FAQ)
 
 app.get('/',(req,res)=>{
     res.send('welcome BeeShop')

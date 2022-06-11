@@ -29,6 +29,10 @@ const reviewSchema=mongoose.Schema({
     },
     product:{
         type:Object
+    },
+    deleteFlag:{
+        type:Boolean,
+        default:false
     }
 },{
     collection:'review'

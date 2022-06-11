@@ -14,14 +14,16 @@ const userRegister=async(req,res)=>{
         if(!errors.isEmpty()){
             return res.status(400).send({errors:errors.array()})
         }else{
+            console.log('line 17',req.body)
             const num=await register.countDocuments({phoneNumber:req.body.phoneNumber})
+            console.log('line 19',num)
             if(num==0){
                 req.body.password=await bcrypt.hash(req.body.password,10)
                 req.body.repeatPassword=await bcrypt.hash(req.body.repeatPassword,10)
                 req.body.createdAt=moment(new Date()).toISOString().slice(0,10)
-        const data=await register.create(req.body)
-                if(data){
-                    console.log('line 24',data)
+                    const data=await register.create(req.body)
+                if(data!=null){
+                    console.log('line 26',data)
                     res.status(200).send({success:'true',message:'register successfully',data:data})
                 }else{
                     res.status(400).send({success:'false',message:'failed to register'})
@@ -29,7 +31,7 @@ const userRegister=async(req,res)=>{
             }else{
                 res.status(302).send({success:'false',message:'your phoneNumber already exist'})
             }
-}
+        }
     }catch(err){
         res.status(500).send({message:'internal server error'})
     }
@@ -40,11 +42,13 @@ const login=async(req,res)=>{
         if(!errors.isEmpty()){
             return res.status(302).send({errors:errors.array()})
         }else{
+            console.log('line 45',req.body)
             const data=await register.aggregate([{$match:{phoneNumber:req.body.phoneNumber}}])
             if(data!=null){
-                const verifyPassword=await bcrypt.compare(req.body.password,data[0].password)
+                console.log('line 47',data)
+                const verifyPassword=await bcrypt.compare(req.body.password,data.password)
                 if(verifyPassword==true){
-                    const token=jwt.sign({userId:data[0]._id},'SecretKey')
+                    const token=jwt.sign({userId:data._id},'SecretKey')
                     res.status(200).send({success:'true',message:'login successfully',token,data:data})
                 }else{
                     res.status(302).send({success:'false',message:'password mismatch'})
@@ -58,6 +62,71 @@ const login=async(req,res)=>{
         res.status(500).send({message:'internal server error'})
     }
 }
+
+const forgetPassword=(req,res)=>{
+    try{
+        if (req.body.otp != null) {
+            otpSchema.findOne({ otp: req.body.otp }, async (err, result) => {
+                console.log("line 68", result)
+                if (result) {
+                    register.findOne({phoneNumber:req.body.phoneNumber,deleteFlag:false }, async (err, data) => {
+                        console.log("line 71", data)
+                        if (data!=null) {
+                            if (req.body.phoneNumber==data.phoneNumber) {
+                                console.log("line 74", data.phoneNumber)
+
+                                if (req.body.newPassword == req.body.confirmPassword) {
+                                    console.log("line 77", req.body.newPassword)
+                                    console.log("line 78", req.body.confirmPassword)
+
+                                    req.body.newPassword = await bcrypt.hash(req.body.newPassword, 10)
+                                    register.findOneAndUpdate({phoneNumber:req.body.phoneNumber}, { $set:{password: req.body.newPassword} },{new:true}, (err, datas) => {
+                                        if (err) { throw err }
+                                        else {
+                                            console.log('line 84',datas);
+                                            res.status(200).send({ message: "Reset Password Successfully", datas })
+                                        }
+                                    })
+                                } else { res.status(400).send({ message: 'password does not match' }) }
+                            } else { res.status(400).send({ message: 'phoneNumber does not match ' }) }
+                        }
+                    })
+                } else { res.status(400).send({ message: 'invalid otp' }) }
+            })
+        } else {
+            register.findOne({ phoneNumber:req.body.phoneNumber,deleteFlag:false},(err,data) => {
+                console.log("line 96", data)
+                if (data) {
+                    console.log('line 99',data.contact);
+                    if (req.body.phoneNumber == data.phoneNumber) {
+                        const otp = randomString(3)
+                        console.log("otp", otp)
+                        req.body.userDetails=data
+                       otpSchema.create({ otp: otp,userDetails:req.body.userDetails},async(err, result) => {
+                            console.log("line 104", result)
+                            if (err) { throw err }
+                            if (result) {
+                                console.log("line 107", result)
+                               // postMail(req.body.email, 'otp for changing password', otp)
+                                const response = await fast2sms.sendMessage({ authorization: process.env.OTPKEY,message:otp,numbers:[data.phoneNumber]})
+                                res.status(200).send({ message: "verification otp send your mobile number",result})
+                                setTimeout(() => {
+                                    otpSchema.findOneAndDelete({ otp: otp }, (err, datas) => {
+                                        console.log("line 113", datas)
+                                        if (err) { throw err }
+                                    })
+                                }, 2000000)
+                            }
+                        })
+                    } else { res.status(400).send({ message: 'phoneNumber does not match' }) }
+                } else { res.status(400).send({ message: 'invalid token' }) }
+            })
+        }
+    }catch(err){
+        res.status(500).send({success:'false',message:'internal server error'})
+    }
+}
+
 const loginForUser=async(req,res)=>{
     try {
         console.log(req.body);
@@ -78,7 +147,7 @@ const loginForUser=async(req,res)=>{
                                 console.log("line 18", data1)
                                     if (data1) {
                                         const response = await fast2sms.sendMessage({authorization: process.env.OTPKEY,message:otp,numbers:[data[0].phoneNumber]})
-                                        postMail(data[0].email,"BeeShop","verify otp:"+otp)
+                                        //postMail(data[0].email,"BeeShop","verify otp:"+otp)
                                             const token = jwt.sign({ userid: data[0]._id }, 'secret')
                                              console.log("line 23",token)
                                                 res.status(200).send({ message: "verification otp send your email",otp,token,data:data})
@@ -119,35 +188,6 @@ const loginForUser=async(req,res)=>{
 }catch (err) {
         console.log(err.message)
         res.status(500).send({ message: 'internal server error' })}
-}
-let transport = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'nishagowsalya339@gmail.com',
-        pass: '8760167075'
-    }
-})
-const postMail = function ( to, subject, text) {
-    return transport.sendMail({
-        from: 'nishagowsalya339@gmail.com',
-        to: to,
-        subject: subject,
-        text: text,
-    })
-}
-
-const verificationOtp=async(req,res)=>{
-    try{
-        const data=await otpSchema.aggregate([{$match:{otp:req.body.otp}}])
-       console.log('line 52',data)
-       if(data.length!=0){
-           res.status(200).send({success:'true',message:'login successfull',data})
-       }else{
-           res.status(400).send({success:'false',message:'invalid otp try it again',data:[]})
-       }
-    }catch(err){
-        res.status(500).send({message:err.message})
-    }
 }
 
 const imageUpload=(req,res)=>{
@@ -251,8 +291,8 @@ const deleteUserDetails=async(req,res)=>{
 module.exports={
     userRegister,
     login,
+    forgetPassword,
     loginForUser,
-    verificationOtp,
     imageUpload,
     getAllUser,
     getById,

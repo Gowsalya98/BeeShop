@@ -6,11 +6,11 @@ const registerControl=require('./user_controller')
 
 router.post('/register',valid.valid,registerControl.userRegister)
 
-router.post('/login',valid.valid,registerControl.login)
+router.post('/login',valid.verification,registerControl.login)
+
+router.post('/forgetPassword',valid.verify,registerControl.forgetPassword)
 
 router.post('/image',multer.upload.single('image'),registerControl.imageUpload)
-
-router.post('/verification',registerControl.verificationOtp)
 
 router.get('/getAll',registerControl.getAllUser)
 

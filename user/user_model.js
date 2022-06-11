@@ -14,6 +14,8 @@ const registerSchema=mongoose.Schema({
         type:String,
         default:''
     },
+    newPassword:String,
+    confirmPassword:String,
     repeatPassword:{
         type:String,
         default:''
