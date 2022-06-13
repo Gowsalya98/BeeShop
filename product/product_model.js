@@ -28,12 +28,7 @@ const sellProductSchema=mongoose.Schema({
         type:Number,
         default:0
     },
-    review:[{
-        userName:String,
-        email:String,
-        quotes:String,
-        description:String
-    }], 
+    review:[Object], 
     paymentStatus:{
         type:String,
         default:'pending'

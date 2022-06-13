@@ -38,17 +38,21 @@ const userRegister=async(req,res)=>{
 }
 const login=async(req,res)=>{
     try{
+        if(Object.keys(req.body).length===0){
+            res.status(302).send({message:'please provide valid details'})
+        }else{
         const errors=validationResult(req)
         if(!errors.isEmpty()){
             return res.status(302).send({errors:errors.array()})
         }else{
             console.log('line 45',req.body)
-            const data=await register.aggregate([{$match:{phoneNumber:req.body.phoneNumber}}])
-            if(data!=null){
-                console.log('line 47',data)
-                const verifyPassword=await bcrypt.compare(req.body.password,data.password)
+            console.log(parseInt(req.body.phoneNumber))
+            const data=await register.aggregate([{$match:{phoneNumber:parseInt(req.body.phoneNumber)}}])
+            if(data.length!=0){
+                console.log('line 47',data[0])
+                const verifyPassword=await bcrypt.compare(req.body.password,data[0].password)
                 if(verifyPassword==true){
-                    const token=jwt.sign({userId:data._id},'SecretKey')
+                    const token=jwt.sign({userId:data[0]._id},'SecretKey')
                     res.status(200).send({success:'true',message:'login successfully',token,data:data})
                 }else{
                     res.status(302).send({success:'false',message:'password mismatch'})
@@ -57,18 +61,19 @@ const login=async(req,res)=>{
                 res.status(400).send({success:'false',message:'please register here...!'})
             }
         }
+        }
     }catch(err){
         console.log(err)
         res.status(500).send({message:'internal server error'})
     }
 }
 
-const forgetPassword=(req,res)=>{
+const forgetPassword=async(req,res)=>{
     try{
         if (req.body.otp != null) {
             otpSchema.findOne({ otp: req.body.otp }, async (err, result) => {
                 console.log("line 68", result)
-                if (result) {
+                if (result!=null) {
                     register.findOne({phoneNumber:req.body.phoneNumber,deleteFlag:false }, async (err, data) => {
                         console.log("line 71", data)
                         if (data!=null) {
@@ -81,7 +86,7 @@ const forgetPassword=(req,res)=>{
 
                                     req.body.newPassword = await bcrypt.hash(req.body.newPassword, 10)
                                     register.findOneAndUpdate({phoneNumber:req.body.phoneNumber}, { $set:{password: req.body.newPassword} },{new:true}, (err, datas) => {
-                                        if (err) { throw err }
+                                        if (err) { res.status(400).send({message:'unsuccessfull'})}
                                         else {
                                             console.log('line 84',datas);
                                             res.status(200).send({ message: "Reset Password Successfully", datas })
@@ -89,40 +94,45 @@ const forgetPassword=(req,res)=>{
                                     })
                                 } else { res.status(400).send({ message: 'password does not match' }) }
                             } else { res.status(400).send({ message: 'phoneNumber does not match ' }) }
+                        }else{
+                            res.status(302).send({message:'invalid phone number'})
                         }
                     })
                 } else { res.status(400).send({ message: 'invalid otp' }) }
             })
         } else {
-            register.findOne({ phoneNumber:req.body.phoneNumber,deleteFlag:false},(err,data) => {
-                console.log("line 96", data)
-                if (data) {
-                    console.log('line 99',data.contact);
-                    if (req.body.phoneNumber == data.phoneNumber) {
+            const data=await register.aggregate([{$match:{$and:[{phoneNumber:parseInt(req.body.phoneNumber)},{deleteFlag:false}]}}])
+                console.log("line 99", data)
+                if (data[0]!=null) {
+                    console.log('line 101',data[0].PhoneNumber);
+                    if (req.body.phoneNumber == data[0].phoneNumber) {
                         const otp = randomString(3)
                         console.log("otp", otp)
                         req.body.userDetails=data
                        otpSchema.create({ otp: otp,userDetails:req.body.userDetails},async(err, result) => {
-                            console.log("line 104", result)
-                            if (err) { throw err }
+                            console.log("line 107", result)
                             if (result) {
-                                console.log("line 107", result)
+                                console.log("line 109", result)
                                // postMail(req.body.email, 'otp for changing password', otp)
                                 const response = await fast2sms.sendMessage({ authorization: process.env.OTPKEY,message:otp,numbers:[data.phoneNumber]})
                                 res.status(200).send({ message: "verification otp send your mobile number",result})
                                 setTimeout(() => {
                                     otpSchema.findOneAndDelete({ otp: otp }, (err, datas) => {
-                                        console.log("line 113", datas)
+                                        console.log("line 115", datas)
                                         if (err) { throw err }
                                     })
                                 }, 2000000)
+                            }else{
+                                res.status(302).send({message:'does not create otp'})
                             }
                         })
-                    } else { res.status(400).send({ message: 'phoneNumber does not match' }) }
-                } else { res.status(400).send({ message: 'invalid token' }) }
-            })
-        }
+                    } else { res.status(302).send({ message: 'phoneNumber does not match' }) }
+                }else{
+                    res.status(302).send({success:'false',message:'please check your phone number'})
+                }
+            }
     }catch(err){
+        console.log(err)
         res.status(500).send({success:'false',message:'internal server error'})
     }
 }

@@ -24,6 +24,7 @@ const reviewSchema=mongoose.Schema({
     createdAt:String,
     quotes:String,
     description:String,
+    productId:String,
     userDetails:{
         type:Object
     },

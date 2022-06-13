@@ -15,30 +15,30 @@ const createReview=async(req,res)=>{
             req.body.userDetails=datas
             if(datas!=null){
                     const result =await product.findOne({_id:req.params.productId,deleteFlag:false})
-                   console.log('line 17',result)
+                    console.log('line 17',result)
                     if(result!=null){
-                        var reviewDetails={}
-                        reviewDetails.quotes=req.body.quotes
-                        reviewDetails.description=req.body.description
-                        reviewDetails.userName=datas[0].userName
-                        reviewDetails.email=datas[0].email
-                        req.body.review=reviewDetails
-                        const result1=await product.findOneAndUpdate({_id:req.params.productId},req.body,{new:true})
-                        console.log('line 19',result1);
-                        if(result1!=null){
-                            req.body.product=result1
-                            console.log('line 28',req.body.product)
-                            req.body.createdAt=moment(new Date()).toISOString().slice(0,10)
-                            const data=await reviews.create(req.body)
-                                if(data!=null){
-                                    console.log('line 24',data)
-                                    res.status(200).send({success:'true',message:'successfully post data',data})
-                                }else{
-                                    res.status(400).send({success:'false',message:'failed to post review'})
-                                }
-                        }else{
-                            res.status(302).send({success:'false',message:'does not update product details'})
-                        }
+                        req.body.productId=req.params.productId
+                        req.body.createdAt=moment(new Date()).toISOString().slice(0,10)
+                        const data=await reviews.create(req.body)
+                            if(data!=null){
+                                console.log('line 24',data)
+                                //res.status(200).send({success:'true',message:'successfully post data',data})
+                            }else{
+                                res.status(400).send({success:'false',message:'failed to post review'})
+                            }
+        //                     var reviewDetails={}
+        //                     reviewDetails.quotes=req.body.quotes
+        //                     reviewDetails.description=req.body.description
+        //                     reviewDetails.userName=datas[0].userName
+        //                     reviewDetails.email=datas[0].email
+        //                     req.body.review=reviewDetails
+                            const result1=await product.findOne({_id:data.productId,deleteFlag:false})
+                            console.log('line 19',result1.review);
+                            if(result1!=null){
+                                var arr=[]
+                            }else{
+                                res.status(302).send({success:'false',message:'does not update product details'})
+                            }
                     }else{
                         res.status(302).send({success:'false',message:'invalid id'})
                     }
