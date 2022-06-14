@@ -6,7 +6,9 @@ const registerControl=require('./user_controller')
 
 router.post('/register',valid.valid,registerControl.userRegister)
 
-router.post('/login',valid.verification,registerControl.login)
+router.post('/login',registerControl.login)
+
+router.post('/socialMediaLogin',valid.verification,registerControl.socialMediaLogin)
 
 router.post('/forgetPassword',valid.verify,registerControl.forgetPassword)
 

@@ -24,11 +24,12 @@ const sellProductSchema=mongoose.Schema({
     city:String,
     state:String
     },
+    productStatus:{type:String,default:'available'},
     rating:{
         type:Number,
         default:0
     },
-    review:[Object], 
+    review:[], 
     paymentStatus:{
         type:String,
         default:'pending'

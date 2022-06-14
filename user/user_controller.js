@@ -15,7 +15,7 @@ const userRegister=async(req,res)=>{
             return res.status(400).send({errors:errors.array()})
         }else{
             console.log('line 17',req.body)
-            const num=await register.countDocuments({phoneNumber:req.body.phoneNumber})
+            const num=await register.countDocuments({phoneNumber:parseInt(req.body.phoneNumber)})
             console.log('line 19',num)
             if(num==0){
                 req.body.password=await bcrypt.hash(req.body.password,10)
@@ -46,10 +46,10 @@ const login=async(req,res)=>{
             return res.status(302).send({errors:errors.array()})
         }else{
             console.log('line 45',req.body)
-            console.log(parseInt(req.body.phoneNumber))
+            console.log('line 49',parseInt(req.body.phoneNumber))
             const data=await register.aggregate([{$match:{phoneNumber:parseInt(req.body.phoneNumber)}}])
             if(data.length!=0){
-                console.log('line 47',data[0])
+                console.log('line 52',data[0])
                 const verifyPassword=await bcrypt.compare(req.body.password,data[0].password)
                 if(verifyPassword==true){
                     const token=jwt.sign({userId:data[0]._id},'SecretKey')
@@ -137,63 +137,37 @@ const forgetPassword=async(req,res)=>{
     }
 }
 
-const loginForUser=async(req,res)=>{
+const socialMediaLogin=async(req,res)=>{
     try {
         console.log(req.body);
         if(Object.keys(req.body).length===0){
             res.status(302).send({message:'please provide valid details'})
         }else{
-            const errors =validationResult(req)
-            if(!errors.isEmpty()){
-                return res.status(400).send({errors:errors.array()})
-            }else{
-            const data=await register.aggregate([{$match:{$or:[{email:req.body.email},{phoneNumber:req.body.phoneNumber},{GoogleId:req.body.GoogleId},{faceBookId:req.body.faceBookId}]}}])
-            console.log('line 11',data)
+            const data=await register.aggregate([{$match:{$or:[{GoogleId:req.body.GoogleId},{faceBookId:req.body.faceBookId}]}}])
+            console.log('line 147',data)
             if(data.length!=0){
-                        if (data[0].email!=null||data[0].PhoneNumber!=null) {
-                                const otp = randomString(3)
-                                console.log("otp", otp)
-                              const data1=await otpSchema.create({otp: otp })
-                                console.log("line 18", data1)
-                                    if (data1) {
-                                        const response = await fast2sms.sendMessage({authorization: process.env.OTPKEY,message:otp,numbers:[data[0].phoneNumber]})
-                                        //postMail(data[0].email,"BeeShop","verify otp:"+otp)
-                                            const token = jwt.sign({ userid: data[0]._id }, 'secret')
-                                             console.log("line 23",token)
-                                                res.status(200).send({ message: "verification otp send your email",otp,token,data:data})
-                                                    setTimeout(() => {
-                                           otpSchema.findOneAndDelete({ otp: otp },{returnOriginal:false}, (err, result) => {
-                                                if(result){
-                                                console.log("line 28", result)
-                                                }else{
-                                                   res.status(400).send({message:'something error'})
-                                                }
-                                            })
-                                        }, 300000000)
-                                    }else{
-                                        res.status(400).send({success:'false',message:'otp does not send'})
-                                    }  
-                        }else if(data[0].GoogleId!=0 ||data[0].faceBookId!=0){
-                            if(data!=null){
-                                const token = jwt.sign({ userid: data[0]._id }, 'secret')
-                                console.log("line 39",token)
-                                res.status(200).send({ success:'true',message: "login successfull",token,data:data})
-                             } else{
-                                res.status(400).send({ success:'false',message: "failed to login"})
-                             }   
-                        }else{
-                            res.status(400).send({ success:'false',message: "failed"})
-                            }        
+                if(data[0].GoogleId!=0 ||data[0].faceBookId!=0){
+                    if(data!=null){
+                        const token = jwt.sign({ userId: data[0]._id }, 'secret')
+                        console.log("line 156",token)
+                        res.status(200).send({ success:'true',message: "login successfull",token,data:data})
+                    }else{
+                        res.status(400).send({ success:'false',message: "failed to login"})
+                    }   
+                }else{
+                     res.status(400).send({ success:'false',message: "invalid"})
+                }        
             }else{
-                console.log('line 48',req.body)
+                console.log('line 165',req.body)
                 req.body.createdAt=moment(new Date()).toISOString().slice(0,10)
-                const data1=await login.create(req.body)
+                const data1=await register.create(req.body)
                     if(data1){
-                        console.log('line 51',data1)
+                        console.log('line 169',data1)
                         res.status(200).send({message:'create successfully',data1})
-                    }else{res.status(400).send({message:'please provide valid email'})}
+                    }else{
+                        res.status(400).send({message:'does not create'})
+                    }
             }
-        }
     }
 }catch (err) {
         console.log(err.message)
@@ -301,8 +275,8 @@ const deleteUserDetails=async(req,res)=>{
 module.exports={
     userRegister,
     login,
+    socialMediaLogin,
     forgetPassword,
-    loginForUser,
     imageUpload,
     getAllUser,
     getById,

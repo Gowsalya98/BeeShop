@@ -1,9 +1,7 @@
 const mongoose=require('mongoose')
 
 const reportSchema=mongoose.Schema({
-     createdAt:String,
-    // userName:String,
-    // email:String,
+    createdAt:String,
     quotes:String,
     description:String,
     userDetails:{
@@ -25,12 +23,7 @@ const reviewSchema=mongoose.Schema({
     quotes:String,
     description:String,
     productId:String,
-    userDetails:{
-        type:Object
-    },
-    product:{
-        type:Object
-    },
+    userId:String,
     deleteFlag:{
         type:Boolean,
         default:false

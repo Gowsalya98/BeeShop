@@ -2,68 +2,32 @@ const mongoose=require('mongoose')
 
 const registerSchema=mongoose.Schema({
     createdAt:String,
-    userName:{
-        type:String,
-        default:''
-    },
-    email:{
-        type:String,
-        default:''
-    },
-    password:{
-        type:String,
-        default:''
-    },
+    userName:{type:String,default:''},
+    email:{type:String,default:''},
+    password:{type:String,default:''},
     newPassword:String,
     confirmPassword:String,
-    repeatPassword:{
-        type:String,
-        default:''
+    repeatPassword:{type:String,default:''},
+    phoneNumber:{type:Number,default:0},
+    profileImage:{type:String,default:''},
+    billingAddress:{
+        city:{type:String,default:''},
+        state:{type:String,default:''},
+        country:{type:String,default:''},
+        pincode:{type:Number,default:0},
     },
-    phoneNumber:{
-        type:Number,
-        default:0
+    shippingAddress:{
+        city:{type:String,default:''},
+        state:{type:String,default:''},
+        country:{type:String,default:''},
+        pincode:{type:Number,default:0},  
     },
-    profileImage:{
-        type:String,
-        default:''
-    },
-    address:{
-        type:String,
-        default:''
-    },
-    city:{
-        type:String,
-        default:''
-    },
-    state:{
-        type:String,
-        default:''
-    },
-    country:{
-        type:String,
-        default:''
-    },
-    pincode:{
-        type:Number,
-        default:0
-    },
-    birthday:{
-        type:String,
-        default:''
-    },
-    graphDomain:{
-        type:String,
-        default:''
-    },
-    faceBookId:{
-        type:Number,
-        default:0
-    },
-    GoogleId:{
-        type:Number,
-        default:0
-    },
+    birthday:{type:String,default:'' },
+    skypeId:{type:String,default:'' },
+    website:{type:String,default:'' },
+    graphDomain:{type:String,default:''},
+    faceBookId:{type:Number,default:0},
+    GoogleId:{type:Number,default:0},
     deleteFlag:{
         type:Boolean,
         default:false
