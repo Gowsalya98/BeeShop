@@ -44,7 +44,44 @@ const addProductDetails=async(req,res)=>{
         res.status(500).send({message:'internal server error'})
     }
 }
-
+const ownProductCount=async(req,res)=>{
+    try{
+        const productOwnerToken=jwt.decode(req.headers.authorization)
+        if(productOwnerToken!=null){
+            const data=await product.aggregate([{$match:{$and:[{productOwnerId:productOwnerToken.userId},{deleteFlag:false}]}}])
+            if(data.length!=0){
+                const count=data.length
+                res.status(200).send({success:'false',message:'product count',count})
+            }else{
+                res.status(302).send({success:'false',message:'data not found'})
+            }
+        }else{
+            res.status(302).send({success:'false',message:'unauthorized'})
+        }
+    }catch(err){
+        res.status(500).send({message:'internal server error'})
+    }
+}
+const ownProductReviewCount=async(req,res)=>{
+    try{
+        const productOwnerToken=jwt.decode(req.headers.authorization)
+        if(productOwnerToken!=null){
+            const data=await product.aggregate([{$match:{$and:[{productOwnerId:productOwnerToken.userId},{deleteFlag:false}]}}])
+            if(data.length!=0){
+                console.log('line 71',data[0].review)
+                const count=data[0].review.length
+                res.status(200).send({success:'false',message:'product review count',count})
+            }else{
+                res.status(302).send({success:'false',message:'data not found'})
+            }
+        }else{
+            res.status(302).send({success:'false',message:'unauthorized'})
+        }
+    }catch(err){
+        console.log(err)
+        res.status(500).send({message:'internal server error'})
+    }
+}
 const ownerGetOurOwnProductDetails=async(req,res)=>{
     try{
         const productOwnerToken=jwt.decode(req.headers.authorization)
@@ -65,8 +102,8 @@ const ownerGetOurOwnProductDetails=async(req,res)=>{
 }
 const getAll=async(req,res)=>{
     try{
-        const adminToken=jwt.decode(req.headers.authorization)
-        if(adminToken!=null){
+        //const adminToken=jwt.decode(req.headers.authorization)
+        if(req.headers.authorization){
             const data=await product.aggregate([{$match:{deleteFlag:false}}])
                 if(data!=null){
                     data.sort().reverse()
@@ -155,6 +192,8 @@ const deleteProduct=async(req,res)=>{
 module.exports={
     addProductDetails,
     ownerGetOurOwnProductDetails,
+    ownProductCount,
+    ownProductReviewCount,
     getAll,
     getById,
     updateProduct,

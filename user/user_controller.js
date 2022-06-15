@@ -168,10 +168,10 @@ const socialMediaLogin=async(req,res)=>{
                         res.status(400).send({message:'does not create'})
                     }
             }
-    }
-}catch (err) {
-        console.log(err.message)
-        res.status(500).send({ message: 'internal server error' })}
+        }
+    }catch (err) {
+            console.log(err.message)
+            res.status(500).send({ message: 'internal server error' })}
 }
 
 const imageUpload=(req,res)=>{

@@ -22,7 +22,8 @@ app.use(express.json())
 
 app.use('/uploads', express.static('/home/fbnode/NODE_GOWSI/uploads/BeeShop'))
 
-app.use('/user',user,product,payment,review)
+app.use('/user',user,review)
+app.use('/owner',product,payment)
 app.use('/admin',superadmin,category,FAQ)
 
 app.get('/',(req,res)=>{

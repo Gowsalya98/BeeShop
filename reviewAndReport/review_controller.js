@@ -75,14 +75,6 @@ const getAllReview=async(req,res)=>{
         res.status(500).send({message:'internal server error'})
     }
 }
-
-const getByIdReview=async(req,res)=>{
-    try{
-
-    }catch(err){
-    
-    }
-}
 const createReport=async(req,res)=>{
     try{
         const userToken=jwt.decode(req.headers.authorization)
