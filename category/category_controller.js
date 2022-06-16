@@ -25,7 +25,7 @@ const addCategory=async(req,res)=>{
                 }
             })
         }else{
-            res.status(400).send({success:'false',message:'unauthorized'})
+            res.status(302).send({success:'false',message:'unauthorized'})
         }
     }catch(err){
         res.status(500).send({message:'internal server error'})
@@ -41,10 +41,10 @@ const getAllCategory=async(req,res)=>{
             data.sort().reverse()
             res.status(200).send({Success:'true',message:'All category details',data})
        }else{
-        res.status(400).send({uccess:'false',message:'failed',data:[]})
+        res.status(302).send({uccess:'false',message:'failed',data:[]})
        }
     }else{
-        res.status(400).send({success:'false',message:'unauthorized'})
+        res.status(302).send({success:'false',message:'unauthorized'})
     }
     }catch(err){
         
@@ -60,7 +60,7 @@ const getById=async(req,res)=>{
               res.status(302).send({success:'false',message:'failed', data: [] });
             }
           } else {
-            res.status(400).send({ message: "please provide a valid id" });
+            res.status(302).send({ message: "please provide a valid id" });
           }
     }catch(err){
         res.status(500).send({message:err.message})
@@ -85,7 +85,7 @@ const updateCategory=async(req,res)=>{
                   res.status(200).send({ message: "please provide a valid category id" });
                 }
               }else{
-                res.status(400).send({ message: "unauthorized" });
+                res.status(302).send({ message: "unauthorized" });
               }
             }catch(err){
                 console.log(err);
@@ -101,13 +101,13 @@ const deleteCategory=async(req,res)=>{
             if(data!=null){
                 res.status(200).send({success:'true',message:'delete successfully',data})
             }else{
-                res.status(400).send({success:'false', message:'something wrong please try it again'})
+                res.status(302).send({success:'false', message:'something wrong please try it again'})
             }
         }else{
-            res.status(400).send({success:'false',message:'please provide valid id'})
+            res.status(302).send({success:'false',message:'please provide valid id'})
         }
       }else{
-        res.status(400).send({success:'false',message:"unauthorized"})
+        res.status(302).send({success:'false',message:"unauthorized"})
       }
     }catch(err){
       console.log(err);

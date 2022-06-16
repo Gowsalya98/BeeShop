@@ -8,7 +8,7 @@ const register = async (req, res) => {
     try {
         const errors = validationResult(req)
         if (!errors.isEmpty()) {
-            return res.status(400).send({ errors: errors.array() })
+            return res.status(302).send({ errors: errors.array() })
         } else {
          const data=await superAdmin.countDocuments({email: req.body.email })
          console.log('line 13',data)
@@ -22,7 +22,7 @@ const register = async (req, res) => {
             res.status(302).send({ message: "failed to register",data:[] })
          }
         }else{
-            res.status(400).send({ message: "This Email already Exists" })
+            res.status(302).send({ message: "This Email already Exists" })
         }
     }
     } catch (err) {
@@ -34,7 +34,7 @@ const login = async (req, res) => {
     try {
         const errors = validationResult(req)
         if (!errors.isEmpty()) {
-            return res.status(400).send({ errors: errors.array() })
+            return res.status(302).send({ errors: errors.array() })
         } else {
             superAdmin.findOne({ email: req.body.email }, async (err, data) => {
               if(data){
@@ -46,10 +46,10 @@ const login = async (req, res) => {
                         console.log('line 45',data)
                         res.status(200).send({ message: "Login Successfully", token,data })
                     } else {
-                        res.status(400).send({ message: "Incorrect Password" })
+                        res.status(302).send({ message: "Incorrect Password" })
                     }
                 }else{
-                    res.status(400).send({ message: "invalid email & password" })
+                    res.status(302).send({ message: "invalid email & password" })
                 }
 
             })
@@ -67,7 +67,7 @@ const createPackageForSuperAdmin=async (req,res)=>{
             if(data!=null){
                 res.status(200).send({success:'true',message:'create package successfull',data})
             }else{
-                res.status(400).send({success:'false',message:'failed to create package'})
+                res.status(302).send({success:'false',message:'failed to create package'})
             }
         }else{
             res.status(302).send({success:'false',message:'unauthorized'})
@@ -108,7 +108,7 @@ const updatePackage=async(req,res)=>{
             res.status(302).send({success:'false',message:'your data already deleted'})
         }
     }else{
-        res.status(400).send({success:'false',message:'invalid id'})
+        res.status(301).send({success:'false',message:'invalid id'})
     }
     }catch(err){
         res.status(500).send({success:'false',message:'internal server error'})
@@ -124,7 +124,7 @@ const deletePackage=async(req,res)=>{
                 res.status(302).send({success:'false',message:'does not delete data'})
             }
         }else{
-            res.status(400).send({success:'false',message:'invalid id'})
+            res.status(302).send({success:'false',message:'invalid id'})
         }
     }catch(err){
         res.status(500).send({message:'internal server error'})

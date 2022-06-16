@@ -91,7 +91,7 @@ const ownerGetOurOwnProductDetails=async(req,res)=>{
                 data.sort().reverse()
                 res.status(200).send({success:'true',message:'your own product details',data:data})
             }else{
-                res.status(400).send({success:'false',message:'failed to get data',data:[]})
+                res.status(301).send({success:'false',message:'failed to get data',data:[]})
             }
         }else{
             res.status(302).send({success:'false',message:'unauthorized'})

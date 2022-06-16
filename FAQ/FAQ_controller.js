@@ -18,7 +18,7 @@ const createFAQ=async(req,res)=>{
                     res.status(302).send({message:"unsuccessfully failed"})
                 }
         }else{
-            res.status(400).send({message:"unauthorized"})
+            res.status(301).send({message:"unauthorized"})
         }
     }catch(err){
         res.status(500).send({message:err.message})
@@ -36,7 +36,7 @@ const getAll=async(req,res)=>{
                 res.status(302).send({message:"Data not found"})
             }
         }else{
-            res.status(400).send({message:"Unauthorized"})
+            res.status(301).send({message:"Unauthorized"})
         }
     }catch(err){
         res.status(500).send({message:err.message})
@@ -54,10 +54,10 @@ const updateFAQ=async(req,res)=>{
                     if(data!=null){
                         res.status(200).send({message:"update successfully",data:data})
                     }else{
-                        res.status(400).send({message:"data not found"})
+                        res.status(301).send({message:"data not found"})
                     }
                 }else{
-                    res.status(400).send({message:"data not found"})
+                    res.status(301).send({message:"data not found"})
                 }
             }else{
                 res.status(303).send({message:"please provide valid id"})
@@ -82,13 +82,13 @@ const removeFAQ=async(req,res)=>{
                     if(data!=null){
                         res.status(200).send({message:"Deleted successfully",data})
                     }else{
-                        res.status(400).send({message:"Data not found"})
+                        res.status(301).send({message:"Data not found"})
                     }
                 }else{
                     res.status(302).send({message:"Data not found"})
                 }
             }else{
-                res.status(400).send({message:"Please provid the vaild id"})
+                res.status(301).send({message:"Please provid the vaild id"})
             }
         }else{
             res.status(302).send({message:"Unauthorized"})

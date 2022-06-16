@@ -18,13 +18,13 @@ const createOrderId=(req,res)=>{
         }
         instance.orders.create(options,(err,order)=>{
             if(err){
-                res.status(400).send({success:'false',message:'failed'})
+                res.status(301).send({success:'false',message:'failed'})
             }else{
                 req.body.orderId=order.id
                 req.body.createdAt=moment(new Date()).toISOString().slice(0,10)
                 payment.create(req.body,(err,data)=>{
                     if(err){
-                        res.status(400).send({success:'false',message:'failed to create order id'})
+                        res.status(302).send({success:'false',message:'failed to create order id'})
                     }else{
                         res.status(200).send({success:'true',message:'successfully generate order id',data})
                     }
@@ -55,7 +55,7 @@ const subscriptionPlan=async(req,res)=>{
                     req.body.subscriptionEndDate=moment(new Date()).add(30+differInDays,'days').toISOString()
                     }
                       req.body.productId=req.params.productId
-                      req.body.createdAt=moment(new Date()).toISOString()
+                      
                       const createPaymentAgain=await subscribe.create(req.body)
                       console.log('line 59',createPaymentAgain)
             }else{
@@ -64,7 +64,7 @@ const subscriptionPlan=async(req,res)=>{
                     console.log('line 62',data)    
                     if(data.length!=null){
                         req.body.ownerId=data.productOwnerId
-                        req.body.createdAt=moment(new Date()).toISOString()
+                       
                         const createPayment=await subscribe.create(req.body)
                         console.log('line 66',createPayment)
             
@@ -133,7 +133,7 @@ const getById=async(req,res)=>{
                     res.status(302).send({success:'false',message:'data not found'})
                 }
         }else{
-            res.status(400).send({success:'false',message:'invalid id'})
+            res.status(301).send({success:'false',message:'invalid id'})
         }
     }catch(err){
         res.status(500).send({message:'internal server error'})

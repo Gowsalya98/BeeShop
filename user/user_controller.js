@@ -26,7 +26,7 @@ const userRegister=async(req,res)=>{
                     console.log('line 26',data)
                     res.status(200).send({success:'true',message:'register successfully',data:data})
                 }else{
-                    res.status(400).send({success:'false',message:'failed to register'})
+                    res.status(301).send({success:'false',message:'failed to register'})
                 }
             }else{
                 res.status(302).send({success:'false',message:'your phoneNumber already exist'})
@@ -47,7 +47,7 @@ const login=async(req,res)=>{
         }else{
             console.log('line 45',req.body)
             console.log('line 49',parseInt(req.body.phoneNumber))
-            const data=await register.aggregate([{$match:{phoneNumber:parseInt(req.body.phoneNumber)}}])
+            const data=await register.aggregate([{$match:{$and:[{phoneNumber:parseInt(req.body.phoneNumber)},{deleteFlag:false}]}}])
             if(data.length!=0){
                 console.log('line 52',data[0])
                 const verifyPassword=await bcrypt.compare(req.body.password,data[0].password)
@@ -58,7 +58,7 @@ const login=async(req,res)=>{
                     res.status(302).send({success:'false',message:'password mismatch'})
                 }
             }else{
-                res.status(400).send({success:'false',message:'please register here...!'})
+                res.status(301).send({success:'false',message:'please register here...!'})
             }
         }
         }
@@ -86,19 +86,19 @@ const forgetPassword=async(req,res)=>{
 
                                     req.body.newPassword = await bcrypt.hash(req.body.newPassword, 10)
                                     register.findOneAndUpdate({phoneNumber:req.body.phoneNumber}, { $set:{password: req.body.newPassword} },{new:true}, (err, datas) => {
-                                        if (err) { res.status(400).send({message:'unsuccessfull'})}
+                                        if (err) { res.status(302).send({message:'unsuccessfull'})}
                                         else {
                                             console.log('line 84',datas);
                                             res.status(200).send({ message: "Reset Password Successfully", datas })
                                         }
                                     })
-                                } else { res.status(400).send({ message: 'password does not match' }) }
-                            } else { res.status(400).send({ message: 'phoneNumber does not match ' }) }
+                                } else { res.status(301).send({ message: 'password does not match' }) }
+                            } else { res.status(302).send({ message: 'phoneNumber does not match ' }) }
                         }else{
                             res.status(302).send({message:'invalid phone number'})
                         }
                     })
-                } else { res.status(400).send({ message: 'invalid otp' }) }
+                } else { res.status(301).send({ message: 'invalid otp' }) }
             })
         } else {
             const data=await register.aggregate([{$match:{$and:[{phoneNumber:parseInt(req.body.phoneNumber)},{deleteFlag:false}]}}])
@@ -152,10 +152,10 @@ const socialMediaLogin=async(req,res)=>{
                         console.log("line 156",token)
                         res.status(200).send({ success:'true',message: "login successfull",token,data:data})
                     }else{
-                        res.status(400).send({ success:'false',message: "failed to login"})
+                        res.status(302).send({ success:'false',message: "failed to login"})
                     }   
                 }else{
-                     res.status(400).send({ success:'false',message: "invalid"})
+                     res.status(301).send({ success:'false',message: "invalid"})
                 }        
             }else{
                 console.log('line 165',req.body)
@@ -165,7 +165,7 @@ const socialMediaLogin=async(req,res)=>{
                         console.log('line 169',data1)
                         res.status(200).send({message:'create successfully',data1})
                     }else{
-                        res.status(400).send({message:'does not create'})
+                        res.status(302).send({message:'does not create'})
                     }
             }
         }
@@ -175,17 +175,21 @@ const socialMediaLogin=async(req,res)=>{
 }
 
 const imageUpload=(req,res)=>{
-    try{
+    try{    
+            console.log('line 180',req.body);
             req.body.image=`http://192.168.0.112:9096/uploads/${req.file.filename}`
             req.body.createdAt=moment(new Date()).toISOString().slice(0,10)
+            console.log('line 183',req.body);
             image.create(req.body,async(err,data)=>{
               if(err){
-                res.status(400).send({success:'false',message:'failed'})
+                res.status(302).send({success:'false',message:'failed'})
               }else{
+                  console.log('line 188',data);
                 res.status(200).send({success:'true',message:'image upload successfully',data})
               }
             })
     }catch(err){
+        console.log(err)
         res.status(500).send({message:err.message})
     }
 }
@@ -203,7 +207,7 @@ const getAllUser=async(req,res)=>{
             res.status(302).send({message:'data not found',data:[]})
         }
     }else{
-        res.status(400).send({message:'unauthorized'})
+        res.status(301).send({message:'unauthorized'})
     }
     }catch(err){
         res.status(500).send({message:'internal server error'})
@@ -218,8 +222,8 @@ const getById=async(req,res)=>{
             }else{
                 res.status(302).send({success:'false',message:'data not found',data:[]})
             }
-    }else{
-            res.status(400).send({message:'please provide valid id'})
+        }else{
+            res.status(301).send({message:'please provide valid id'})
         }
     }catch(err){
         res.status(500).send({message:'internal server error'})
@@ -244,7 +248,7 @@ const updateUserDetails=async(req,res)=>{
             res.status(200).send({ message: "please provide a valid user id" });
           }
         }else{
-          res.status(400).send({ message: "unauthorized" });
+          res.status(301).send({ message: "unauthorized" });
         }
       }catch(err){
           console.log(err);
@@ -259,13 +263,13 @@ const deleteUserDetails=async(req,res)=>{
               if(data!=null){
                   res.status(200).send({success:'true',message:'delete successfully',data})
               }else{
-                  res.status(400).send({success:'false', message:'something wrong please try it again'})
+                  res.status(302).send({success:'false', message:'something wrong please try it again'})
               }
           }else{
-              res.status(400).send({success:'false',message:'please provide valid user id'})
+              res.status(302).send({success:'false',message:'please provide valid user id'})
           }
         }else{
-          res.status(400).send({success:'false',message:"unauthorized"})
+          res.status(301).send({success:'false',message:"unauthorized"})
         }
       }catch(err){
         console.log(err);
